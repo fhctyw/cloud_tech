@@ -12,3 +12,7 @@ variable "name" {
   type    = string
   default = "website"
 }
+
+variable "function_filename" {
+  type = string
+}
