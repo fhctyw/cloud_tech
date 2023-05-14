@@ -1,18 +1,15 @@
 variable "table_name" {
+  description = "The name of the DynamoDB table"
+  type        = string
+}
+variable "name" {
+  type = string
+}
+
+variable "namespace" {
   type = string
 }
 
 variable "stage" {
-  type    = string
-  default = "dev"
-}
-
-variable "namespace" {
-  type    = string
-  default = "lab"
-}
-
-variable "name" {
-  type    = string
-  default = "dynamodb-website"
+  type = string
 }
