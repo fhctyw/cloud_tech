@@ -10,13 +10,8 @@ variable "stage" {
   type = string
 }
 
-variable "function_names" {
+variable "function_name" {
   description = "Names of the Lambda functions"
-  type        = list(string)
-}
-
-variable "handler" {
-  description = "Lambda function handler"
   type        = string
 }
 
@@ -30,8 +25,16 @@ variable "lambda_function_path" {
   type        = string
 }
 
+variable "custom_policy" {
+  description = "Custom policy for Lambda function"
+}
+
 variable "env_vars" {
   description = "Environment variables for Lambda function"
   type        = map(string)
   default     = {}
+}
+
+variable "api_gateway_rest_arn" {
+  description = "Execution arn of rest api"
 }

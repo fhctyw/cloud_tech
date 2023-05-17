@@ -10,16 +10,6 @@ variable "name" {
   type = string
 }
 
-variable "function_names" {
-  description = "Names of the Lambda functions"
-  type        = list(string)
-}
-
-variable "handler" {
-  description = "Lambda function handler"
-  type        = string
-}
-
 variable "runtime" {
   description = "Runtime for Lambda function"
   type        = string
