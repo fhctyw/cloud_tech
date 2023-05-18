@@ -16,6 +16,10 @@ module "author" {
   stage      = var.stage
 }
 
+locals {
+  absolute_website_path = "/home/arsen/react-app-frontend"
+}
+
 resource "aws_api_gateway_rest_api" "api_gateway" {
   name = "${module.label.id}-api-gateway"
   endpoint_configuration {
@@ -159,6 +163,17 @@ module "lambda_function_delete_course" {
 
   custom_policy        = data.aws_iam_policy_document.delete_course_policy.json
   api_gateway_rest_arn = aws_api_gateway_rest_api.api_gateway.execution_arn
+}
+
+module "s3_bucket" {
+  source = "./modules/s3"
+
+  name      = var.name
+  namespace = var.namespace
+  stage     = var.stage
+
+  s3_name                 = "authors-courses"
+  absolute_website_path = local.absolute_website_path
 }
 
 terraform {

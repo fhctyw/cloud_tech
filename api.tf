@@ -588,4 +588,11 @@ resource "aws_api_gateway_stage" "api_gateway_stage" {
   deployment_id = aws_api_gateway_deployment.api_gateway_deployment.id
   rest_api_id   = aws_api_gateway_rest_api.api_gateway.id
   stage_name    = "dev"
+
+  provisioner "local-exec" {
+    command = <<EOF
+echo 'export default "${self.invoke_url}";' > ${local.absolute_website_path}/src/api/serverUrl.js
+cd ${local.absolute_website_path} && npm install && npm run build
+EOF
+  }
 }
