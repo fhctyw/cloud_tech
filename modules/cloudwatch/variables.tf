@@ -1,4 +1,4 @@
-variable "stage" {
+variable "name" {
   type = string
 }
 
@@ -6,12 +6,12 @@ variable "namespace" {
   type = string
 }
 
-variable "name" {
+variable "stage" {
   type = string
 }
 
-variable "runtime" {
-  description = "Runtime for Lambda function"
+variable "email" {
+  description = "Email for notifications"
   type        = string
 }
 
@@ -20,7 +20,7 @@ variable "lambda_function_path" {
   type        = string
 }
 
-variable "email" {
-  description = "Email for notifications"
-  type = string
+variable "function_name" {
+  description = "Names of the Lambda functions"
+  type        = string
 }

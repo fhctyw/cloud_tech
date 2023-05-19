@@ -68,3 +68,20 @@ data "archive_file" "function_name" {
   source_file = "${var.lambda_function_path}/${var.function_name}.js"
   output_path = "${path.module}/src/${var.function_name}.zip"
 }
+
+locals {
+  log_group_name = "/aws/lambda/${var.function_name}"
+}
+
+resource "aws_cloudwatch_log_group" "log_group" {
+  name = local.log_group_name
+}
+
+resource "aws_cloudwatch_log_subscription_filter" "error_parsing_log" {
+  depends_on = [ aws_cloudwatch_log_group.log_group ]
+  name = "${module.label.id}-log"
+  log_group_name = local.log_group_name
+  filter_pattern = "?ERROR ?WARN ?5xx"
+  # filter_pattern = " "
+  destination_arn = var.error_parse_lambda_arn
+}

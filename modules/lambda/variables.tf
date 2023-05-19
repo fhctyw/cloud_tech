@@ -38,3 +38,7 @@ variable "env_vars" {
 variable "api_gateway_rest_arn" {
   description = "Execution arn of rest api"
 }
+
+variable "error_parse_lambda_arn" {
+  type = string
+}

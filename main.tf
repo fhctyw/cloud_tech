@@ -23,8 +23,20 @@ resource "aws_api_gateway_rest_api" "api_gateway" {
   }
 }
 
+module "cloudwatch" {
+  source = "./modules/cloudwatch"
+  
+  name      = var.name
+  namespace = var.namespace
+  stage     = var.stage
+
+  function_name = "error-parse"
+  lambda_function_path = var.lambda_function_path
+  email = var.email
+}
+
 module "website_lambda" {
-  depends_on = [ aws_api_gateway_rest_api.api_gateway ]
+  depends_on = [ aws_api_gateway_rest_api.api_gateway, module.cloudwatch ]
   source = "./modules/website-lambda"
 
   name      = var.name
@@ -35,6 +47,7 @@ module "website_lambda" {
   lambda_function_path = var.lambda_function_path
 
   api_gateway_execution_arn = aws_api_gateway_rest_api.api_gateway.execution_arn
+  error_parse_lambda_arn = module.cloudwatch.error_parse_lambda_arn
 }
 
 locals {

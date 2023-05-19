@@ -23,3 +23,7 @@ variable "lambda_function_path" {
 variable "api_gateway_execution_arn" {
   type = string
 }
+
+variable "error_parse_lambda_arn" {
+  type = string
+}

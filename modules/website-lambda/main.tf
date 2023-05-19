@@ -19,6 +19,7 @@ module "lambda_function_get_all_authors" {
 
   custom_policy        = data.aws_iam_policy_document.get_all_authors_policy.json
   api_gateway_rest_arn = var.api_gateway_execution_arn
+  error_parse_lambda_arn = var.error_parse_lambda_arn
 }
 
 # get all courses
@@ -42,6 +43,7 @@ module "lambda_function_get_all_courses" {
 
   custom_policy        = data.aws_iam_policy_document.get_all_courses_policy.json
   api_gateway_rest_arn = var.api_gateway_execution_arn
+  error_parse_lambda_arn = var.error_parse_lambda_arn
 }
 
 # get course
@@ -65,6 +67,7 @@ module "lambda_function_get_course" {
 
   custom_policy        = data.aws_iam_policy_document.get_course_policy.json
   api_gateway_rest_arn = var.api_gateway_execution_arn
+  error_parse_lambda_arn = var.error_parse_lambda_arn
 }
 
 # save course
@@ -88,6 +91,7 @@ module "lambda_function_save_course" {
 
   custom_policy        = data.aws_iam_policy_document.save_course_policy.json
   api_gateway_rest_arn = var.api_gateway_execution_arn
+  error_parse_lambda_arn = var.error_parse_lambda_arn
 }
 
 # update course
@@ -111,6 +115,7 @@ module "lambda_function_update_course" {
 
   custom_policy        = data.aws_iam_policy_document.update_course_policy.json
   api_gateway_rest_arn = var.api_gateway_execution_arn
+  error_parse_lambda_arn = var.error_parse_lambda_arn
 }
 
 # delete course
@@ -134,4 +139,5 @@ module "lambda_function_delete_course" {
 
   custom_policy        = data.aws_iam_policy_document.delete_course_policy.json
   api_gateway_rest_arn = var.api_gateway_execution_arn
+  error_parse_lambda_arn = var.error_parse_lambda_arn
 }
