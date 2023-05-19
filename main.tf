@@ -16,164 +16,60 @@ module "author" {
   stage      = var.stage
 }
 
-locals {
-  absolute_website_path = "/home/arsen/react-app-frontend"
-}
-
 resource "aws_api_gateway_rest_api" "api_gateway" {
-  name = "${module.label.id}-api-gateway"
+  name = "${var.namespace}-${var.stage}-${var.name}-api-gateway"
   endpoint_configuration {
     types = ["REGIONAL"]
   }
 }
 
-# get all authors
-data "aws_iam_policy_document" "get_all_authors_policy" {
-  statement {
-    actions   = ["dynamodb:Scan"]
-    resources = ["arn:aws:dynamodb:eu-central-1:717474516480:table/authors"]
-  }
-}
-
-module "lambda_function_get_all_authors" {
-  source = "./modules/lambda"
+module "website_lambda" {
+  depends_on = [ aws_api_gateway_rest_api.api_gateway ]
+  source = "./modules/website-lambda"
 
   name      = var.name
   namespace = var.namespace
   stage     = var.stage
 
-  function_name        = "get-all-authors"
-  runtime              = var.runtime
+  runtime = var.runtime
   lambda_function_path = var.lambda_function_path
 
-  custom_policy        = data.aws_iam_policy_document.get_all_authors_policy.json
-  api_gateway_rest_arn = aws_api_gateway_rest_api.api_gateway.execution_arn
+  api_gateway_execution_arn = aws_api_gateway_rest_api.api_gateway.execution_arn
 }
 
-# get all courses
-data "aws_iam_policy_document" "get_all_courses_policy" {
-  statement {
-    actions   = ["dynamodb:Scan"]
-    resources = ["arn:aws:dynamodb:eu-central-1:717474516480:table/courses"]
-  }
+locals {
+  absolute_website_path = "/home/arsen/react-app-frontend"
+  function_invoke_arns = module.website_lambda.function_invoke_arns
 }
 
-module "lambda_function_get_all_courses" {
-  source = "./modules/lambda"
+module "api" {
+  depends_on = [ module.website_lambda ]
+  source = "./modules/api_gateway"
 
-  name      = var.name
-  namespace = var.namespace
-  stage     = var.stage
-
-  function_name        = "get-all-courses"
-  runtime              = var.runtime
-  lambda_function_path = var.lambda_function_path
-
-  custom_policy        = data.aws_iam_policy_document.get_all_courses_policy.json
-  api_gateway_rest_arn = aws_api_gateway_rest_api.api_gateway.execution_arn
-}
-
-# get course
-data "aws_iam_policy_document" "get_course_policy" {
-  statement {
-    actions   = ["dynamodb:GetItem"]
-    resources = ["arn:aws:dynamodb:eu-central-1:717474516480:table/courses"]
-  }
-}
-
-module "lambda_function_get_course" {
-  source = "./modules/lambda"
-
-  name      = var.name
-  namespace = var.namespace
-  stage     = var.stage
-
-  function_name        = "get-course"
-  runtime              = var.runtime
-  lambda_function_path = var.lambda_function_path
-
-  custom_policy        = data.aws_iam_policy_document.get_course_policy.json
-  api_gateway_rest_arn = aws_api_gateway_rest_api.api_gateway.execution_arn
-}
-
-# save course
-data "aws_iam_policy_document" "save_course_policy" {
-  statement {
-    actions   = ["dynamodb:PutItem"]
-    resources = ["arn:aws:dynamodb:eu-central-1:717474516480:table/courses"]
-  }
-}
-
-module "lambda_function_save_course" {
-  source = "./modules/lambda"
-
-  name      = var.name
-  namespace = var.namespace
-  stage     = var.stage
-
-  function_name        = "save-course"
-  runtime              = var.runtime
-  lambda_function_path = var.lambda_function_path
-
-  custom_policy        = data.aws_iam_policy_document.save_course_policy.json
-  api_gateway_rest_arn = aws_api_gateway_rest_api.api_gateway.execution_arn
-}
-
-# update course
-data "aws_iam_policy_document" "update_course_policy" {
-  statement {
-    actions   = ["dynamodb:PutItem"]
-    resources = ["arn:aws:dynamodb:eu-central-1:717474516480:table/courses"]
-  }
-}
-
-module "lambda_function_update_course" {
-  source = "./modules/lambda"
-
-  name      = var.name
-  namespace = var.namespace
-  stage     = var.stage
-
-  function_name        = "update-course"
-  runtime              = var.runtime
-  lambda_function_path = var.lambda_function_path
-
-  custom_policy        = data.aws_iam_policy_document.update_course_policy.json
-  api_gateway_rest_arn = aws_api_gateway_rest_api.api_gateway.execution_arn
-}
-
-# delete course
-data "aws_iam_policy_document" "delete_course_policy" {
-  statement {
-    actions   = ["dynamodb:DeleteItem"]
-    resources = ["arn:aws:dynamodb:eu-central-1:717474516480:table/courses"]
-  }
-}
-
-module "lambda_function_delete_course" {
-  source = "./modules/lambda"
-
-  name      = var.name
-  namespace = var.namespace
-  stage     = var.stage
-
-  function_name        = "delete-course"
-  runtime              = var.runtime
-  lambda_function_path = var.lambda_function_path
-
-  custom_policy        = data.aws_iam_policy_document.delete_course_policy.json
-  api_gateway_rest_arn = aws_api_gateway_rest_api.api_gateway.execution_arn
+  api_gateway_id        = aws_api_gateway_rest_api.api_gateway.id
+  api_gateway_parent_id = aws_api_gateway_rest_api.api_gateway.root_resource_id
+  absolute_website_path = local.absolute_website_path
+  function_lambda_arns  = local.function_invoke_arns
 }
 
 module "s3_bucket" {
+  depends_on = [ module.api ]
   source = "./modules/s3"
 
   name      = var.name
   namespace = var.namespace
   stage     = var.stage
 
-  s3_name                 = "authors-courses"
+  s3_name               = "authors-courses"
   absolute_website_path = local.absolute_website_path
+}
+
+module "cloudfront_s3" {
+  depends_on = [ module.api ]
+  source = "./modules/cloudfront"
+
+  regional_domain_name = module.s3_bucket.regional_domain_name
+  origin_id            = module.s3_bucket.origin_id
 }
 
 terraform {

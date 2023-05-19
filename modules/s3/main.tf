@@ -48,20 +48,26 @@ resource "aws_s3_bucket_policy" "aws_s3_bucket_policy" {
 }
 
 resource "aws_s3_object" "s3_index_object" {
-  bucket = aws_s3_bucket.s3_bucket.id
+  bucket       = aws_s3_bucket.s3_bucket.id
   content_type = "text/html"
-  key    = "$index.html"
-  source = "${var.absolute_website_path}/build/index.html"
-  etag = filemd5("${var.absolute_website_path}/build/index.html")
+  key          = "index.html"
+  source       = "${var.absolute_website_path}/build/index.html"
+  etag         = filemd5("${var.absolute_website_path}/build/index.html")
+}
+
+locals {
+  mime_types = jsondecode(file("${path.module}/mime.json"))
 }
 
 resource "aws_s3_object" "s3_static_objects" {
   for_each = fileset("${var.absolute_website_path}/build", "**")
-  
+
   bucket = aws_s3_bucket.s3_bucket.id
   key    = each.value
   source = "${var.absolute_website_path}/build/${each.value}"
-  etag = filemd5("${var.absolute_website_path}/build/${each.value}")
+
+  content_type = lookup("${local.mime_types}", regex("\\.[^.]+$", each.value), null)
+  etag         = filemd5("${var.absolute_website_path}/build/${each.value}")
 }
 
 resource "aws_s3_bucket_website_configuration" "s3_bucket_website_configuration" {

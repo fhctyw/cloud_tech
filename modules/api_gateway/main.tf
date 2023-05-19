@@ -1,40 +1,21 @@
-module "label" {
-  source  = "cloudposse/label/null"
-  version = "0.25.0"
-
-  name      = var.name
-  namespace = var.namespace
-  stage     = var.stage
-}
-
 # /authors
 resource "aws_api_gateway_resource" "api_gateway_authors" {
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
-  parent_id   = aws_api_gateway_rest_api.api_gateway.root_resource_id
+  rest_api_id = var.api_gateway_id
+  parent_id   = var.api_gateway_parent_id
   path_part   = "authors"
 
 }
 
 # GET /authors
 resource "aws_api_gateway_method" "api_gateway_authors_get" {
-  rest_api_id   = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id   = var.api_gateway_id
   resource_id   = aws_api_gateway_resource.api_gateway_authors.id
   http_method   = "GET"
   authorization = "NONE"
 }
 
-resource "aws_api_gateway_integration" "api_gateway_authors_get" {
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
-  resource_id = aws_api_gateway_resource.api_gateway_authors.id
-  http_method = aws_api_gateway_method.api_gateway_authors_get.http_method
-
-  type                    = "AWS"
-  integration_http_method = "POST"
-  uri                     = module.lambda_function_get_all_authors.lambda_function_invoke_arn
-}
-
 resource "aws_api_gateway_method_response" "api_gateway_authors_get" {
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id = var.api_gateway_id
   resource_id = aws_api_gateway_resource.api_gateway_authors.id
   http_method = aws_api_gateway_method.api_gateway_authors_get.http_method
   status_code = "200"
@@ -48,10 +29,21 @@ resource "aws_api_gateway_method_response" "api_gateway_authors_get" {
   }
 }
 
+resource "aws_api_gateway_integration" "api_gateway_authors_get" {
+  rest_api_id = var.api_gateway_id
+  resource_id = aws_api_gateway_resource.api_gateway_authors.id
+  http_method = aws_api_gateway_method.api_gateway_authors_get.http_method
+
+  type                    = "AWS"
+  integration_http_method = "POST"
+  uri                     = var.function_lambda_arns["get-all-authors"]
+}
+
+
 resource "aws_api_gateway_integration_response" "api_gateway_authors_get" {
   depends_on = [aws_api_gateway_integration.api_gateway_authors_get]
 
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id = var.api_gateway_id
   resource_id = aws_api_gateway_resource.api_gateway_authors.id
   http_method = aws_api_gateway_method.api_gateway_authors_get.http_method
   status_code = aws_api_gateway_method_response.api_gateway_authors_get.status_code
@@ -63,26 +55,14 @@ resource "aws_api_gateway_integration_response" "api_gateway_authors_get" {
 
 # OPTIONS /authors
 resource "aws_api_gateway_method" "api_gateway_authors_options" {
-  rest_api_id   = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id   = var.api_gateway_id
   resource_id   = aws_api_gateway_resource.api_gateway_authors.id
   http_method   = "OPTIONS"
   authorization = "NONE"
 }
 
-resource "aws_api_gateway_integration" "api_gateway_authors_options" {
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
-  resource_id = aws_api_gateway_resource.api_gateway_authors.id
-  http_method = aws_api_gateway_method.api_gateway_authors_options.http_method
-
-  request_templates = {
-    "application/json" = "{\"statusCode\": 200}"
-  }
-
-  type = "MOCK"
-}
-
 resource "aws_api_gateway_method_response" "api_gateway_authors_options" {
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id = var.api_gateway_id
   resource_id = aws_api_gateway_resource.api_gateway_authors.id
   http_method = aws_api_gateway_method.api_gateway_authors_options.http_method
   status_code = "200"
@@ -98,10 +78,23 @@ resource "aws_api_gateway_method_response" "api_gateway_authors_options" {
   }
 }
 
+resource "aws_api_gateway_integration" "api_gateway_authors_options" {
+  rest_api_id = var.api_gateway_id
+  resource_id = aws_api_gateway_resource.api_gateway_authors.id
+  http_method = aws_api_gateway_method.api_gateway_authors_options.http_method
+
+  request_templates = {
+    "application/json" = "{\"statusCode\": 200}"
+  }
+
+  type = "MOCK"
+}
+
+
 resource "aws_api_gateway_integration_response" "api_gateway_authors_options" {
   depends_on = [aws_api_gateway_integration.api_gateway_authors_options]
 
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id = var.api_gateway_id
   resource_id = aws_api_gateway_resource.api_gateway_authors.id
   http_method = aws_api_gateway_method.api_gateway_authors_options.http_method
   status_code = "200"
@@ -117,32 +110,22 @@ resource "aws_api_gateway_integration_response" "api_gateway_authors_options" {
 
 # /courses
 resource "aws_api_gateway_resource" "api_gateway_courses" {
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
-  parent_id   = aws_api_gateway_rest_api.api_gateway.root_resource_id
+  rest_api_id = var.api_gateway_id
+  parent_id   = var.api_gateway_parent_id
   path_part   = "courses"
 
 }
 
 # GET /courses
 resource "aws_api_gateway_method" "api_gateway_courses_get" {
-  rest_api_id   = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id   = var.api_gateway_id
   resource_id   = aws_api_gateway_resource.api_gateway_courses.id
   http_method   = "GET"
   authorization = "NONE"
 }
 
-resource "aws_api_gateway_integration" "api_gateway_courses_get" {
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
-  resource_id = aws_api_gateway_resource.api_gateway_courses.id
-  http_method = aws_api_gateway_method.api_gateway_courses_get.http_method
-
-  type                    = "AWS"
-  integration_http_method = "POST"
-  uri                     = module.lambda_function_get_all_courses.lambda_function_invoke_arn
-}
-
 resource "aws_api_gateway_method_response" "api_gateway_courses_get" {
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id = var.api_gateway_id
   resource_id = aws_api_gateway_resource.api_gateway_courses.id
   http_method = aws_api_gateway_method.api_gateway_courses_get.http_method
   status_code = "200"
@@ -156,10 +139,21 @@ resource "aws_api_gateway_method_response" "api_gateway_courses_get" {
   }
 }
 
+resource "aws_api_gateway_integration" "api_gateway_courses_get" {
+  rest_api_id = var.api_gateway_id
+  resource_id = aws_api_gateway_resource.api_gateway_courses.id
+  http_method = aws_api_gateway_method.api_gateway_courses_get.http_method
+
+  type                    = "AWS"
+  integration_http_method = "POST"
+  uri                     = var.function_lambda_arns["get-all-courses"]
+}
+
+
 resource "aws_api_gateway_integration_response" "api_gateway_courses_get" {
   depends_on = [aws_api_gateway_integration.api_gateway_courses_get]
 
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id = var.api_gateway_id
   resource_id = aws_api_gateway_resource.api_gateway_courses.id
   http_method = aws_api_gateway_method.api_gateway_courses_get.http_method
   status_code = aws_api_gateway_method_response.api_gateway_courses_get.status_code
@@ -171,7 +165,7 @@ resource "aws_api_gateway_integration_response" "api_gateway_courses_get" {
 
 # # POST /courses
 resource "aws_api_gateway_method" "api_gateway_courses_post" {
-  rest_api_id   = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id   = var.api_gateway_id
   resource_id   = aws_api_gateway_resource.api_gateway_courses.id
   http_method   = "POST"
   authorization = "NONE"
@@ -183,7 +177,7 @@ resource "aws_api_gateway_method" "api_gateway_courses_post" {
 }
 
 resource "aws_api_gateway_model" "api_gateway_model_course" {
-  rest_api_id  = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id  = var.api_gateway_id
   name         = "CourseInputModel"
   content_type = "application/json"
 
@@ -205,21 +199,12 @@ EOF
 
 resource "aws_api_gateway_request_validator" "api_gateway_courses_post_request_validator" {
   name                  = "request_validator"
-  rest_api_id           = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id           = var.api_gateway_id
   validate_request_body = true
 }
 
-resource "aws_api_gateway_integration" "api_gateway_courses_post" {
-  rest_api_id             = aws_api_gateway_rest_api.api_gateway.id
-  resource_id             = aws_api_gateway_resource.api_gateway_courses.id
-  http_method             = aws_api_gateway_method.api_gateway_courses_post.http_method
-  type                    = "AWS"
-  integration_http_method = "POST"
-  uri                     = module.lambda_function_save_course.lambda_function_invoke_arn
-}
-
 resource "aws_api_gateway_method_response" "api_gateway_courses_post" {
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id = var.api_gateway_id
   resource_id = aws_api_gateway_resource.api_gateway_courses.id
   http_method = aws_api_gateway_method.api_gateway_courses_post.http_method
   status_code = "200"
@@ -233,10 +218,19 @@ resource "aws_api_gateway_method_response" "api_gateway_courses_post" {
   }
 }
 
+resource "aws_api_gateway_integration" "api_gateway_courses_post" {
+  rest_api_id             = var.api_gateway_id
+  resource_id             = aws_api_gateway_resource.api_gateway_courses.id
+  http_method             = aws_api_gateway_method.api_gateway_courses_post.http_method
+  type                    = "AWS"
+  integration_http_method = "POST"
+  uri                     = var.function_lambda_arns["save-course"]
+}
+
 resource "aws_api_gateway_integration_response" "api_gateway_courses_post" {
   depends_on = [aws_api_gateway_integration.api_gateway_courses_post]
 
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id = var.api_gateway_id
   resource_id = aws_api_gateway_resource.api_gateway_courses.id
   http_method = aws_api_gateway_method.api_gateway_courses_post.http_method
   status_code = "200"
@@ -248,14 +242,14 @@ resource "aws_api_gateway_integration_response" "api_gateway_courses_post" {
 
 # OPTIONS /courses
 resource "aws_api_gateway_method" "api_gateway_courses_options" {
-  rest_api_id   = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id   = var.api_gateway_id
   resource_id   = aws_api_gateway_resource.api_gateway_courses.id
   http_method   = "OPTIONS"
   authorization = "NONE"
 }
 
 resource "aws_api_gateway_integration" "api_gateway_courses_options" {
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id = var.api_gateway_id
   resource_id = aws_api_gateway_resource.api_gateway_courses.id
   http_method = aws_api_gateway_method.api_gateway_courses_options.http_method
   type        = "MOCK"
@@ -266,7 +260,7 @@ resource "aws_api_gateway_integration" "api_gateway_courses_options" {
 }
 
 resource "aws_api_gateway_method_response" "api_gateway_courses_options" {
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id = var.api_gateway_id
   resource_id = aws_api_gateway_resource.api_gateway_courses.id
   http_method = aws_api_gateway_method.api_gateway_courses_options.http_method
   status_code = "200"
@@ -285,7 +279,7 @@ resource "aws_api_gateway_method_response" "api_gateway_courses_options" {
 resource "aws_api_gateway_integration_response" "api_gateway_courses_options" {
   depends_on = [aws_api_gateway_integration.api_gateway_courses_options]
 
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id = var.api_gateway_id
   resource_id = aws_api_gateway_resource.api_gateway_courses.id
   http_method = aws_api_gateway_method.api_gateway_courses_options.http_method
   status_code = "200"
@@ -297,45 +291,23 @@ resource "aws_api_gateway_integration_response" "api_gateway_courses_options" {
   }
 }
 
-######################################################
-
 # /courses/{id}
 resource "aws_api_gateway_resource" "api_gateway_courses_id" {
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id = var.api_gateway_id
   parent_id   = aws_api_gateway_resource.api_gateway_courses.id
   path_part   = "{id}"
 }
 
 # GET /courses/{id}
 resource "aws_api_gateway_method" "api_gateway_courses_id_get" {
-  rest_api_id   = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id   = var.api_gateway_id
   resource_id   = aws_api_gateway_resource.api_gateway_courses_id.id
   http_method   = "GET"
   authorization = "NONE"
 }
 
-resource "aws_api_gateway_integration" "api_gateway_courses_id_get" {
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
-  resource_id = aws_api_gateway_resource.api_gateway_courses_id.id
-  http_method = aws_api_gateway_method.api_gateway_courses_id_get.http_method
-
-  type                    = "AWS"
-  integration_http_method = "POST"
-  uri                     = module.lambda_function_get_course.lambda_function_invoke_arn
-
-  passthrough_behavior = "WHEN_NO_TEMPLATES"
-
-  request_templates = {
-    "application/json" = <<EOF
-{
-  "id": "$input.params('id')"
-}
-EOF
-  }
-}
-
 resource "aws_api_gateway_method_response" "api_gateway_courses_id_get" {
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id = var.api_gateway_id
   resource_id = aws_api_gateway_resource.api_gateway_courses_id.id
   http_method = aws_api_gateway_method.api_gateway_courses_id_get.http_method
   status_code = "200"
@@ -349,10 +321,31 @@ resource "aws_api_gateway_method_response" "api_gateway_courses_id_get" {
   }
 }
 
+resource "aws_api_gateway_integration" "api_gateway_courses_id_get" {
+  rest_api_id = var.api_gateway_id
+  resource_id = aws_api_gateway_resource.api_gateway_courses_id.id
+  http_method = aws_api_gateway_method.api_gateway_courses_id_get.http_method
+
+  type                    = "AWS"
+  integration_http_method = "POST"
+  uri                     = var.function_lambda_arns["get-course"]
+
+  passthrough_behavior = "WHEN_NO_TEMPLATES"
+
+  request_templates = {
+    "application/json" = <<EOF
+{
+  "id": "$input.params('id')"
+}
+EOF
+  }
+}
+
+
 resource "aws_api_gateway_integration_response" "api_gateway_courses_id_get" {
   depends_on = [aws_api_gateway_integration.api_gateway_courses_id_get]
 
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id = var.api_gateway_id
   resource_id = aws_api_gateway_resource.api_gateway_courses_id.id
   http_method = aws_api_gateway_method.api_gateway_courses_id_get.http_method
   status_code = aws_api_gateway_method_response.api_gateway_courses_id_get.status_code
@@ -364,20 +357,35 @@ resource "aws_api_gateway_integration_response" "api_gateway_courses_id_get" {
 
 # PUT /courses/{id}
 resource "aws_api_gateway_method" "api_gateway_courses_id_put" {
-  rest_api_id   = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id   = var.api_gateway_id
   resource_id   = aws_api_gateway_resource.api_gateway_courses_id.id
   http_method   = "PUT"
   authorization = "NONE"
 }
 
+resource "aws_api_gateway_method_response" "api_gateway_courses_id_put" {
+  rest_api_id = var.api_gateway_id
+  resource_id = aws_api_gateway_resource.api_gateway_courses_id.id
+  http_method = aws_api_gateway_method.api_gateway_courses_id_put.http_method
+  status_code = "200"
+
+  response_models = {
+    "application/json" = "Empty"
+  }
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
 resource "aws_api_gateway_integration" "api_gateway_courses_id_put" {
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id = var.api_gateway_id
   resource_id = aws_api_gateway_resource.api_gateway_courses_id.id
   http_method = aws_api_gateway_method.api_gateway_courses_id_put.http_method
 
   type                    = "AWS"
   integration_http_method = "POST"
-  uri                     = module.lambda_function_update_course.lambda_function_invoke_arn
+  uri                     = var.function_lambda_arns["update-course"]
 
   passthrough_behavior = "WHEN_NO_TEMPLATES"
 
@@ -395,25 +403,10 @@ EOF
   }
 }
 
-resource "aws_api_gateway_method_response" "api_gateway_courses_id_put" {
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
-  resource_id = aws_api_gateway_resource.api_gateway_courses_id.id
-  http_method = aws_api_gateway_method.api_gateway_courses_id_put.http_method
-  status_code = "200"
-
-  response_models = {
-    "application/json" = "Empty"
-  }
-
-  response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = true
-  }
-}
-
 resource "aws_api_gateway_integration_response" "api_gateway_courses_id_put" {
   depends_on = [aws_api_gateway_integration.api_gateway_courses_id_put]
 
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id = var.api_gateway_id
   resource_id = aws_api_gateway_resource.api_gateway_courses_id.id
   http_method = aws_api_gateway_method.api_gateway_courses_id_put.http_method
   status_code = aws_api_gateway_method_response.api_gateway_courses_id_put.status_code
@@ -425,20 +418,35 @@ resource "aws_api_gateway_integration_response" "api_gateway_courses_id_put" {
 
 # DELETE /courses/{id}
 resource "aws_api_gateway_method" "api_gateway_courses_id_delete" {
-  rest_api_id   = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id   = var.api_gateway_id
   resource_id   = aws_api_gateway_resource.api_gateway_courses_id.id
   http_method   = "DELETE"
   authorization = "NONE"
 }
 
+resource "aws_api_gateway_method_response" "api_gateway_courses_id_delete" {
+  rest_api_id = var.api_gateway_id
+  resource_id = aws_api_gateway_resource.api_gateway_courses_id.id
+  http_method = aws_api_gateway_method.api_gateway_courses_id_delete.http_method
+  status_code = "200"
+
+  response_models = {
+    "application/json" = "Empty"
+  }
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Origin" = true
+  }
+}
+
 resource "aws_api_gateway_integration" "api_gateway_courses_id_delete" {
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id = var.api_gateway_id
   resource_id = aws_api_gateway_resource.api_gateway_courses_id.id
   http_method = aws_api_gateway_method.api_gateway_courses_id_delete.http_method
 
   type                    = "AWS"
   integration_http_method = "POST"
-  uri                     = module.lambda_function_delete_course.lambda_function_invoke_arn
+  uri                     = var.function_lambda_arns["delete-course"]
 
   passthrough_behavior = "WHEN_NO_TEMPLATES"
 
@@ -451,25 +459,11 @@ EOF
   }
 }
 
-resource "aws_api_gateway_method_response" "api_gateway_courses_id_delete" {
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
-  resource_id = aws_api_gateway_resource.api_gateway_courses_id.id
-  http_method = aws_api_gateway_method.api_gateway_courses_id_delete.http_method
-  status_code = "200"
-
-  response_models = {
-    "application/json" = "Empty"
-  }
-
-  response_parameters = {
-    "method.response.header.Access-Control-Allow-Origin" = true
-  }
-}
 
 resource "aws_api_gateway_integration_response" "api_gateway_courses_id_delete" {
   depends_on = [aws_api_gateway_integration.api_gateway_courses_id_delete]
 
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id = var.api_gateway_id
   resource_id = aws_api_gateway_resource.api_gateway_courses_id.id
   http_method = aws_api_gateway_method.api_gateway_courses_id_delete.http_method
   status_code = aws_api_gateway_method_response.api_gateway_courses_id_delete.status_code
@@ -481,25 +475,14 @@ resource "aws_api_gateway_integration_response" "api_gateway_courses_id_delete" 
 
 # OPTIONS /courses/{id}
 resource "aws_api_gateway_method" "api_gateway_courses_id_options" {
-  rest_api_id   = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id   = var.api_gateway_id
   resource_id   = aws_api_gateway_resource.api_gateway_courses_id.id
   http_method   = "OPTIONS"
   authorization = "NONE"
 }
 
-resource "aws_api_gateway_integration" "api_gateway_courses_id_options" {
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
-  resource_id = aws_api_gateway_resource.api_gateway_courses_id.id
-  http_method = aws_api_gateway_method.api_gateway_courses_id_options.http_method
-  type        = "MOCK"
-
-  request_templates = {
-    "application/json" = "{\"statusCode\": 200}"
-  }
-}
-
 resource "aws_api_gateway_method_response" "api_gateway_courses_id_options" {
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id = var.api_gateway_id
   resource_id = aws_api_gateway_resource.api_gateway_courses_id.id
   http_method = aws_api_gateway_method.api_gateway_courses_id_options.http_method
   status_code = "200"
@@ -515,10 +498,21 @@ resource "aws_api_gateway_method_response" "api_gateway_courses_id_options" {
   }
 }
 
+resource "aws_api_gateway_integration" "api_gateway_courses_id_options" {
+  rest_api_id = var.api_gateway_id
+  resource_id = aws_api_gateway_resource.api_gateway_courses_id.id
+  http_method = aws_api_gateway_method.api_gateway_courses_id_options.http_method
+  type        = "MOCK"
+
+  request_templates = {
+    "application/json" = "{\"statusCode\": 200}"
+  }
+}
+
 resource "aws_api_gateway_integration_response" "api_gateway_courses_id_options" {
   depends_on = [aws_api_gateway_integration.api_gateway_courses_id_options]
 
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id = var.api_gateway_id
   resource_id = aws_api_gateway_resource.api_gateway_courses_id.id
   http_method = aws_api_gateway_method.api_gateway_courses_id_options.http_method
   status_code = "200"
@@ -530,10 +524,8 @@ resource "aws_api_gateway_integration_response" "api_gateway_courses_id_options"
   }
 }
 
-######################################################
-
 resource "aws_api_gateway_deployment" "api_gateway_deployment" {
-  rest_api_id = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id = var.api_gateway_id
 
   depends_on = [
     aws_api_gateway_method.api_gateway_authors_get,
@@ -586,13 +578,13 @@ resource "aws_api_gateway_deployment" "api_gateway_deployment" {
 # dev stage 
 resource "aws_api_gateway_stage" "api_gateway_stage" {
   deployment_id = aws_api_gateway_deployment.api_gateway_deployment.id
-  rest_api_id   = aws_api_gateway_rest_api.api_gateway.id
+  rest_api_id   = var.api_gateway_id
   stage_name    = "dev"
 
   provisioner "local-exec" {
     command = <<EOF
-echo 'export default "${self.invoke_url}";' > ${local.absolute_website_path}/src/api/serverUrl.js
-cd ${local.absolute_website_path} && npm install && npm run build
+echo 'export default "${self.invoke_url}";' > ${var.absolute_website_path}/src/api/serverUrl.js
+cd ${var.absolute_website_path} && npm install && npm run build
 EOF
   }
 }
